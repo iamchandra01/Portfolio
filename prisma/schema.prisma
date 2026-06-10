@@ -1,0 +1,352 @@
+generator client { provider = "prisma-client-js" }
+
+datasource db { provider = "postgresql" url = env("DATABASE_URL") directUrl = env("DIRECT_URL") }
+
+enum Role { USER MODERATOR ADMIN }
+enum Visibility { PUBLIC PRIVATE COLLEGE_ONLY }
+enum CommunityKind { GENERAL ACADEMICS TECHNOLOGY CAREER COLLEGE_HUB GAMING }
+enum AttachmentType { IMAGE PDF PPT DOCX GIF OTHER }
+enum NotificationType { LIKE COMMENT MENTION TEAM_INVITE FOLLOW MESSAGE SYSTEM }
+enum ReportStatus { OPEN REVIEWING RESOLVED DISMISSED }
+enum TeamRequestStatus { OPEN FILLED ARCHIVED }
+enum MembershipRole { MEMBER LEAD MODERATOR ADMIN }
+enum ReactionTarget { MESSAGE PROJECT COMMENT NOTE }
+
+model User {
+  id String @id @default(cuid())
+  clerkId String @unique
+  email String @unique
+  username String @unique
+  name String
+  imageUrl String?
+  role Role @default(USER)
+  bannedAt DateTime?
+  lastSeenAt DateTime?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  profile Profile?
+  followers Follow[] @relation("followers")
+  following Follow[] @relation("following")
+  memberships CommunityMember[]
+  messages Message[]
+  projects Project[]
+  notes Note[]
+  comments Comment[]
+  bookmarks Bookmark[]
+  notifications Notification[] @relation("notificationRecipient")
+  directThreadMembers DirectThreadMember[]
+  reactions Reaction[]
+  messageReads MessageRead[]
+  sentNotifications Notification[] @relation("notificationActor")
+  teamRequests TeamRequest[]
+  teamMembers TeamMember[]
+  reports Report[] @relation("reporter")
+  resolvedReports Report[] @relation("resolver")
+
+  @@index([username])
+  @@index([role, bannedAt])
+}
+
+model Profile {
+  id String @id @default(cuid())
+  userId String @unique
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  bannerUrl String?
+  bio String? @db.VarChar(500)
+  college String?
+  degree String?
+  year String?
+  skills String[] @default([])
+  interests String[] @default([])
+  linkedinUrl String?
+  githubUrl String?
+  instagramUrl String?
+  youtubeUrl String?
+  xUrl String?
+  spotifyUrl String?
+  redditUrl String?
+  portfolioUrl String?
+  visibility Visibility @default(PUBLIC)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([college])
+  @@index([skills], type: Gin)
+  @@index([interests], type: Gin)
+}
+
+model Follow {
+  followerId String
+  followingId String
+  follower User @relation("following", fields: [followerId], references: [id], onDelete: Cascade)
+  following User @relation("followers", fields: [followingId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+  @@id([followerId, followingId])
+  @@index([followingId])
+}
+
+model Community {
+  id String @id @default(cuid())
+  slug String @unique
+  name String
+  description String @db.VarChar(280)
+  kind CommunityKind
+  icon String
+  isDefault Boolean @default(false)
+  createdAt DateTime @default(now())
+  channels Channel[]
+  members CommunityMember[]
+  teamRequests TeamRequest[]
+  notes Note[]
+  reports Report[]
+  @@index([kind])
+}
+
+model Channel {
+  id String @id @default(cuid())
+  communityId String
+  community Community @relation(fields: [communityId], references: [id], onDelete: Cascade)
+  slug String
+  name String
+  topic String?
+  position Int @default(0)
+  messages Message[]
+  @@unique([communityId, slug])
+  @@index([communityId, position])
+}
+
+model CommunityMember {
+  communityId String
+  userId String
+  community Community @relation(fields: [communityId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  role MembershipRole @default(MEMBER)
+  joinedAt DateTime @default(now())
+  @@id([communityId, userId])
+  @@index([userId])
+}
+
+model Message {
+  id String @id @default(cuid())
+  channelId String?
+  channel Channel? @relation(fields: [channelId], references: [id], onDelete: Cascade)
+  directThreadId String?
+  directThread DirectThread? @relation(fields: [directThreadId], references: [id], onDelete: Cascade)
+  authorId String
+  author User @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  parentId String?
+  parent Message? @relation("messageReplies", fields: [parentId], references: [id], onDelete: SetNull)
+  replies Message[] @relation("messageReplies")
+  content String @db.VarChar(4000)
+  editedAt DateTime?
+  deletedAt DateTime?
+  pinnedAt DateTime?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  attachments Attachment[]
+  reactions Reaction[]
+  reads MessageRead[]
+  @@index([channelId, createdAt])
+  @@index([directThreadId, createdAt])
+  @@index([authorId, createdAt])
+}
+
+model DirectThread {
+  id String @id @default(cuid())
+  createdAt DateTime @default(now())
+  members DirectThreadMember[]
+  messages Message[]
+}
+
+model DirectThreadMember {
+  threadId String
+  userId String
+  thread DirectThread @relation(fields: [threadId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  lastReadAt DateTime?
+  @@id([threadId, userId])
+  @@index([userId])
+}
+
+model MessageRead {
+  messageId String
+  userId String
+  message Message @relation(fields: [messageId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  readAt DateTime @default(now())
+  @@id([messageId, userId])
+}
+
+model Attachment {
+  id String @id @default(cuid())
+  messageId String?
+  noteId String?
+  projectId String?
+  message Message? @relation(fields: [messageId], references: [id], onDelete: Cascade)
+  note Note? @relation(fields: [noteId], references: [id], onDelete: Cascade)
+  project Project? @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  type AttachmentType
+  url String
+  publicId String
+  fileName String
+  bytes Int
+  mimeType String
+  createdAt DateTime @default(now())
+  @@index([messageId])
+  @@index([noteId])
+  @@index([projectId])
+}
+
+model Note {
+  id String @id @default(cuid())
+  authorId String
+  author User @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  communityId String?
+  community Community? @relation(fields: [communityId], references: [id], onDelete: SetNull)
+  title String
+  description String @db.VarChar(1000)
+  subject String
+  semester String
+  downloadCount Int @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  attachments Attachment[]
+  bookmarks Bookmark[]
+  reactions Reaction[]
+  comments Comment[]
+  @@index([subject, semester])
+  @@index([createdAt])
+}
+
+model Project {
+  id String @id @default(cuid())
+  authorId String
+  author User @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  title String
+  description String @db.VarChar(1600)
+  githubUrl String?
+  demoUrl String?
+  techStack String[] @default([])
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  attachments Attachment[]
+  reactions Reaction[]
+  comments Comment[]
+  bookmarks Bookmark[]
+  @@index([authorId, createdAt])
+  @@index([techStack], type: Gin)
+}
+
+model Comment {
+  id String @id @default(cuid())
+  authorId String
+  author User @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  projectId String?
+  noteId String?
+  project Project? @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  note Note? @relation(fields: [noteId], references: [id], onDelete: Cascade)
+  content String @db.VarChar(1200)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  reactions Reaction[]
+  @@index([projectId, createdAt])
+  @@index([noteId, createdAt])
+}
+
+model Reaction {
+  id String @id @default(cuid())
+  userId String
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  target ReactionTarget
+  emoji String
+  messageId String?
+  projectId String?
+  noteId String?
+  commentId String?
+  message Message? @relation(fields: [messageId], references: [id], onDelete: Cascade)
+  project Project? @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  note Note? @relation(fields: [noteId], references: [id], onDelete: Cascade)
+  comment Comment? @relation(fields: [commentId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+  @@index([userId])
+  @@index([messageId])
+  @@index([projectId])
+  @@index([noteId])
+}
+
+model Bookmark {
+  id String @id @default(cuid())
+  userId String
+  projectId String?
+  noteId String?
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  project Project? @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  note Note? @relation(fields: [noteId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+  @@index([userId, createdAt])
+  @@index([projectId])
+  @@index([noteId])
+}
+
+model TeamRequest {
+  id String @id @default(cuid())
+  creatorId String
+  creator User @relation(fields: [creatorId], references: [id], onDelete: Cascade)
+  communityId String?
+  community Community? @relation(fields: [communityId], references: [id], onDelete: SetNull)
+  title String
+  description String @db.VarChar(1600)
+  rolesNeeded String[] @default([])
+  skillsNeeded String[] @default([])
+  status TeamRequestStatus @default(OPEN)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  members TeamMember[]
+  @@index([status, createdAt])
+  @@index([skillsNeeded], type: Gin)
+}
+
+model TeamMember {
+  teamRequestId String
+  userId String
+  teamRequest TeamRequest @relation(fields: [teamRequestId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  role String
+  acceptedAt DateTime?
+  createdAt DateTime @default(now())
+  @@id([teamRequestId, userId])
+  @@index([userId])
+}
+
+model Notification {
+  id String @id @default(cuid())
+  recipientId String
+  actorId String?
+  recipient User @relation("notificationRecipient", fields: [recipientId], references: [id], onDelete: Cascade)
+  actor User? @relation("notificationActor", fields: [actorId], references: [id], onDelete: SetNull)
+  type NotificationType
+  title String
+  body String
+  href String?
+  readAt DateTime?
+  createdAt DateTime @default(now())
+  @@index([recipientId, readAt, createdAt])
+}
+
+model Report {
+  id String @id @default(cuid())
+  reporterId String
+  reporter User @relation("reporter", fields: [reporterId], references: [id], onDelete: Cascade)
+  resolverId String?
+  resolver User? @relation("resolver", fields: [resolverId], references: [id], onDelete: SetNull)
+  communityId String?
+  community Community? @relation(fields: [communityId], references: [id], onDelete: SetNull)
+  reason String @db.VarChar(1000)
+  status ReportStatus @default(OPEN)
+  targetType String
+  targetId String
+  createdAt DateTime @default(now())
+  resolvedAt DateTime?
+  @@index([status, createdAt])
+  @@index([targetType, targetId])
+}

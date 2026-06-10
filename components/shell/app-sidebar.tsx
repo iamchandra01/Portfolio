@@ -1,0 +1,9 @@
+import Link from "next/link";
+import { Bell, BookOpen, Code2, Compass, LayoutDashboard, Search, Shield, UsersRound } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { cn } from "@/lib/utils";
+
+const nav = [
+  { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard }, { href: "/communities/general", label: "Communities", icon: Compass }, { href: "/notes", label: "Notes", icon: BookOpen }, { href: "/projects", label: "Projects", icon: Code2 }, { href: "/teams", label: "Team Finder", icon: UsersRound }, { href: "/search", label: "Search", icon: Search }, { href: "/admin", label: "Admin", icon: Shield }
+];
+export function AppSidebar({ className }: { className?: string }) { return <aside className={cn("hidden h-screen w-72 shrink-0 border-r bg-card/70 p-4 backdrop-blur-xl lg:sticky lg:top-0 lg:block", className)}><Link href="/dashboard" className="mb-8 flex items-center gap-3 rounded-2xl px-2 py-3"><div className="grid size-10 place-items-center rounded-2xl bg-primary text-primary-foreground">S</div><div><p className="font-bold">StudentHub</p><p className="text-xs text-muted-foreground">Campus collaboration OS</p></div></Link><nav className="space-y-1">{nav.map((item) => <Link key={item.href} href={item.href} className="flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-muted-foreground transition hover:bg-accent hover:text-accent-foreground"><item.icon className="size-4" />{item.label}</Link>)}</nav><div className="mt-8 rounded-2xl border bg-background/80 p-4"><div className="flex items-center gap-2 text-sm font-semibold"><Bell className="size-4" /> Real-time ready</div><p className="mt-2 text-xs text-muted-foreground">Socket.IO events, Redis rate limits, and notification persistence are wired for production.</p><Badge className="mt-3">SaaS-grade</Badge></div></aside>; }

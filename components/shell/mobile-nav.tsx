@@ -1,0 +1,4 @@
+import Link from "next/link";
+import { BookOpen, Code2, Compass, Home, Search, UsersRound } from "lucide-react";
+const nav = [{ href: "/dashboard", icon: Home, label: "Home" }, { href: "/communities/general", icon: Compass, label: "Hub" }, { href: "/notes", icon: BookOpen, label: "Notes" }, { href: "/projects", icon: Code2, label: "Projects" }, { href: "/teams", icon: UsersRound, label: "Teams" }, { href: "/search", icon: Search, label: "Search" }];
+export function MobileNav() { return <nav className="fixed inset-x-3 bottom-3 z-50 grid grid-cols-6 rounded-2xl border bg-card/95 p-2 shadow-card backdrop-blur-xl lg:hidden">{nav.map((item) => <Link key={item.href} href={item.href} className="flex flex-col items-center gap-1 rounded-xl px-2 py-1.5 text-[11px] text-muted-foreground hover:bg-accent hover:text-accent-foreground"><item.icon className="size-4" />{item.label}</Link>)}</nav>; }
