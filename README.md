@@ -1,27 +1,35 @@
-<h1 align="center">Hi 👋, I'm Chandra Pratp Singh</h1>
-<h3 align="center">A passionate frontend developer from India</h3>
+# StudentHub
 
-- 🌱 I’m currently learning **Frontend**
+StudentHub is a production-oriented student community platform built with Next.js 15, TypeScript, Tailwind CSS, Prisma, PostgreSQL, Clerk, Cloudinary, Redis, and Socket.IO.
 
-- 👨‍💻 All of my projects are available at [https://www.linkedin.com/in/chandra-pratap-singh-a21019346?utm_source=share&utm_campaign=share_via&utm_content=profile&utm_medium=android_app](https://www.linkedin.com/in/chandra-pratap-singh-a21019346?utm_source=share&utm_campaign=share_via&utm_content=profile&utm_medium=android_app)
+## Features
 
-- 💬 Ask me about **HTML,CSS,JavaScript**
+- Premium responsive app shell with dark and light mode.
+- Clerk-secured dashboard, profiles, communities, notes, projects, team finder, search, and admin pages.
+- Scalable Prisma schema covering users, profiles, follows, communities, channels, messages, direct threads, attachments, reactions, notes, projects, teams, notifications, reports, bookmarks, and read receipts.
+- Validated API routes with Zod and Redis-backed rate limits.
+- Cloudinary signed upload endpoint with file type and size validation.
+- Socket.IO realtime service for channel events, typing indicators, and notifications.
 
-- 📫 How to reach me **chandrasingh73682@gmail.com**
+## Getting started
 
-- ⚡ Fun fact **I think I am funny**
+```bash
+npm install
+cp .env.example .env
+npm run prisma:generate
+npm run seed
+npm run dev
+```
 
-<h3 align="left">Connect with me:</h3>
-<p align="left">
-<a href="https://twitter.com/iamchandra_01" target="blank"><img align="center" src="https://raw.githubusercontent.com/rahuldkjain/github-profile-readme-generator/master/src/images/icons/Social/twitter.svg" alt="iamchandra_01" height="30" width="40" /></a>
-<a href="https://linkedin.com/in/chandra-pratap-singh-a21019346?utm_source=share&utm_campaign=share_via&utm_content=profile&utm_medium=android_app" target="blank"><img align="center" src="https://raw.githubusercontent.com/rahuldkjain/github-profile-readme-generator/master/src/images/icons/Social/linked-in-alt.svg" alt="chandra-pratap-singh-a21019346?utm_source=share&utm_campaign=share_via&utm_content=profile&utm_medium=android_app" height="30" width="40" /></a>
-</p>
+## Useful commands
 
-<h3 align="left">Languages and Tools:</h3>
-<p align="left"> <a href="https://www.w3schools.com/css/" target="_blank" rel="noreferrer"> <img src="https://raw.githubusercontent.com/devicons/devicon/master/icons/css3/css3-original-wordmark.svg" alt="css3" width="40" height="40"/> </a> <a href="https://www.w3.org/html/" target="_blank" rel="noreferrer"> <img src="https://raw.githubusercontent.com/devicons/devicon/master/icons/html5/html5-original-wordmark.svg" alt="html5" width="40" height="40"/> </a> <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript" target="_blank" rel="noreferrer"> <img src="https://raw.githubusercontent.com/devicons/devicon/master/icons/javascript/javascript-original.svg" alt="javascript" width="40" height="40"/> </a> </p>
+```bash
+npm run typecheck
+npm run build
+npm run prisma:migrate
+npm run seed
+```
 
-<p><img align="left" src="https://github-readme-stats.vercel.app/api/top-langs?username=iamchandra01&show_icons=true&locale=en&layout=compact" alt="iamchandra01" /></p>
+## Architecture
 
-<p>&nbsp;<img align="center" src="https://github-readme-stats.vercel.app/api?username=iamchandra01&show_icons=true&locale=en" alt="iamchandra01" /></p>
-
-<p><img align="center" src="https://github-readme-streak-stats.herokuapp.com/?user=iamchandra01&" alt="iamchandra01" /></p>
+See [`docs/architecture.md`](docs/architecture.md) for system architecture, ER diagram, folder structure, API design, UI wireframe plan, security controls, and deployment notes.
